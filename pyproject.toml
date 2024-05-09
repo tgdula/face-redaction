@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "face-redaction"
+version = "0.1.0"
+description = ""
+authors = ["Tomasz Gdula <tomasz.gdula@fingo.net>"]
+readme = "README.md"
+packages = [{include = "face_redaction"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+opencv-python = "^4.9.0.80"
+cmake = "^3.29.2"
+dlib = "^19.24.4"
+face-recognition = "^1.3.0"
+rich = "^13.7.1"
+typer = "^0.12.3"
+
+[package]
+include = ["*.py"]
+
+[tool.poetry.scripts]
+redact = "face_redaction.cli:main"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
