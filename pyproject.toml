@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "face_redaction"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.10.0,<3.12"
 opencv-python = "^4.9.0.80"
 cmake = "^3.29.2"
 dlib = "^19.24.4"

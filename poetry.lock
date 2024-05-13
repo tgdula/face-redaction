@@ -193,7 +193,6 @@ numpy = [
     {version = ">=1.21.2", markers = "python_version >= \"3.10\""},
     {version = ">=1.21.4", markers = "python_version >= \"3.10\" and platform_system == \"Darwin\""},
     {version = ">=1.23.5", markers = "python_version >= \"3.11\""},
-    {version = ">=1.26.0", markers = "python_version >= \"3.12\""},
     {version = ">=1.19.3", markers = "python_version >= \"3.6\" and platform_system == \"Linux\" and platform_machine == \"aarch64\" or python_version >= \"3.9\""},
     {version = ">=1.17.0", markers = "python_version >= \"3.7\""},
     {version = ">=1.17.3", markers = "python_version >= \"3.8\""},
@@ -358,5 +357,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.11"
-content-hash = "d877f74ec5c8a5648beec1d7f5f40d2f6d7247dd7fe42cb3c93046f094e14829"
+python-versions = ">=3.10.0,<3.12"
+content-hash = "e7e72f6066c0e229af5229e172ff85f157c147b063810ebe8b712cc0c8b416e7"

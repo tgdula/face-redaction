@@ -8,8 +8,9 @@ Face-redaction utilizes AI models to detect faces in provided images and video f
 The face redaction process involves two steps:
 1. detecting face coordinates (also known as: region of interests).
    `face-recognition` library is used for face detection. It allows detecting faces using different models, such as:
-   * `hog` - default model, faster
-   * `cnn` - NN model, considerably slower (much better performance with CUDA)
+   * `hog` - histogram of oriented gradents model - default & faster
+   * `cnn` - convolutional NN model, considerably slower (much better performance with CUDA)
+   See [face detection in towardsdatascience.com](https://towardsdatascience.com/cnn-based-face-detector-from-dlib-c3696195e01c)
 2. replace the found coordinates with given redaction method
    For image processing the `opencv-python` library
  - `blur` - uses `cv2.GaussianBlur`
@@ -36,9 +37,9 @@ redact faces in a video:
 poetry run redact redact-faces MY_VIDEO_FILE.mp4
 ```
 
-redact faces using convolution neural network model, with solid color replacement
+redact faces using convolutional neural network model, with solid color replacement
 ```bash
-poetry run redact redact-faces MY_VIDEO_FILE.mp4
+poetry run redact redact-faces --face-detection-model=cnn --face-redaction-method=solid MY_VIDEO_FILE.mp4
 ```
 
 ### Face detection options
@@ -49,3 +50,14 @@ poetry run redact redact-faces MY_VIDEO_FILE.mp4
 ### Face redaction options
 - blur - blurred face
 - solid - face replaced with a solid color rectangle
+
+## Troubleshooting
+### `dlib` installation with GPU support
+`Face-redaction` uses the `dlib` library, which seems challenging to install with GPU support. I recommend after [https://ankitmishra723.medium.com/dlib-setup-for-windows-python-0d9ea92a3e18](https://ankitmishra723.medium.com/dlib-setup-for-windows-python-0d9ea92a3e18) to install some the pre-required libraries with `pip` and the `dlib` library with conda:
+```
+pip install build
+pip install cmake
+conda install -c conda-forge dlib
+```
+
+To check whether the `dlib` actually uses GPU
