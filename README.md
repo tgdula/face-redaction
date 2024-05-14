@@ -11,10 +11,9 @@ The face redaction process involves two steps:
    * `hog` - histogram of oriented gradents model - default & faster
    * `cnn` - convolutional NN model, considerably slower (much better performance with CUDA)
    See [face detection in towardsdatascience.com](https://towardsdatascience.com/cnn-based-face-detector-from-dlib-c3696195e01c)
-2. replace the found coordinates with given redaction method
-   For image processing the `opencv-python` library
- - `blur` - uses `cv2.GaussianBlur`
- - `solid` - just a solid-color rectangles
+2. replace the found coordinates with given redaction method: blur, pixel, solid color
+   For image processing the `opencv-python` library is used
+
 
 ## Installation
 ```bash
@@ -43,13 +42,15 @@ poetry run redact redact-faces --face-detection-model=cnn --face-redaction-metho
 ```
 
 ### Face detection options
-- default - `face-recognition` `hog` model
-- cnn - convolution neural network
+ - `default` - `face-recognition` `hog` model
+ - `cnn` - convolution neural network
 
 
 ### Face redaction options
-- blur - blurred face
-- solid - face replaced with a solid color rectangle
+ - `blur` - uses `cv2.GaussianBlur`
+ - `pixel` - replace face rectangle with pixels
+ - `solid` - just a solid-color rectangles
+
 
 ## Troubleshooting
 ### `dlib` installation with GPU support

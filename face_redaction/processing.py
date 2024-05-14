@@ -23,6 +23,7 @@ class FaceDetectionModel(str, Enum):
     
 class FaceRedactionStrategy(str, Enum):
     blur = "blur"
+    pixel = "pixel"
     solid = "solid"
     def __str__(self):
         return self.name
@@ -175,6 +176,19 @@ class MediaFileEditor:
             kernel_size, filter_standard_deviation = (63,63), 100
             blurred_face = cv2.GaussianBlur(face_roi, kernel_size, filter_standard_deviation)
             image[top:bottom, left:right] = blurred_face
+        elif face_redaction_method == FaceRedactionStrategy.pixel:
+                face_roi = image[top:bottom, left:right]
+                face_height, face_width = face_roi.shape[:2]
+
+                # first resize face to a smaller size
+                # then resize the small face back to the original size (will result in pixels)
+                pixelation_factor = 0.05
+                small_face_roi = cv2.resize(
+                    face_roi, 
+                    (int(face_width * pixelation_factor), int(face_height * pixelation_factor)), 
+                    interpolation=cv2.INTER_NEAREST)
+                pixelated_face = cv2.resize(small_face_roi, (face_width, face_height), interpolation=cv2.INTER_NEAREST)
+                image[top:bottom, left:right] = pixelated_face
         else:
             default_color = (0, 0, 0)
             thickness = -1 # full thickness
