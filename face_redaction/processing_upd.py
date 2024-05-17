@@ -119,11 +119,16 @@ class MediaFileEditor:
             if not ret:
                 break
 
-            #small_frame = cv2.resize(frame, (0, 0), fx=0.9, fy=0.9)
-            #frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
+            # # Optionally resize the frame for faster processing
+            # small_frame = cv2.resize(frame, (0, 0), fx=0.5, fy=0.5)
+            # # Convert the frame from BGR to RGB
+            # rgb_small_frame = small_frame[:, :, ::-1]
+            
+            image_rgb = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
 
             # Find all face locations in the frame
-            face_locations = self._find_face_locations(frame, detection_model=detection_model)
+            face_locations = self._find_face_locations(image_rgb, detection_model=detection_model)
 
             # Redact faces in all locations using the method provided
             for top, right, bottom, left in face_locations:
@@ -155,9 +160,9 @@ class MediaFileEditor:
         if detection_model == FaceDetectionModel.mediapipe:
             face_locations = mp.find_face_locations(image_or_frame)
         elif detection_model == FaceDetectionModel.cnn:
-            face_locations = frec.find_face_locations(image_or_frame, detection_model=str(detection_model))
+            face_locations = frec.find_face_locations(image_or_frame, number_of_times_to_upsample=0, model=str(detection_model))
         else:
-            face_locations = frec.find_face_locations(image_or_frame)
+            face_locations = frec.find_face_locations(image_or_frame, number_of_times_to_upsample=0)
 
 
         # Debug output (uncomment if needed)
@@ -193,7 +198,7 @@ class MediaFileEditor:
 
                 # first resize face to a smaller size
                 # then resize the small face back to the original size (will result in pixels)
-                pixelation_factor = 0.02
+                pixelation_factor = 0.05
                 small_face_roi = cv2.resize(
                     face_roi, 
                     (int(face_width * pixelation_factor), int(face_height * pixelation_factor)), 

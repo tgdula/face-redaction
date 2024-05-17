@@ -61,16 +61,17 @@ def redact_faces(
     console = Console()
     if editor.is_valid_image(input_file):
         print(f"Image file '{input_file}' will be updated and saved in '{output_file}'")
+
         editor.redact_faces_in_image(input_file=input_file,
             output_file=output_file,
             detection_model=face_detection_model,
             face_redaction_method=face_redaction_method) 
 
+
     if editor.is_valid_video(input_file):
         print(f"Video file '{input_file}' will be updated and saved in '{output_file}'")
         with console.status(f"[green] processing video conversion..") as status:
-            # blur faces, show progress (could be longish..). 
-            # HINT: consider rich.progress_bar
+
             editor.redact_faces_in_video(input_file=input_file,
                 output_file=output_file,
                 detection_model=face_detection_model,
