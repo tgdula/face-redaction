@@ -16,6 +16,7 @@ app = typer.Typer(
     add_completion=False, # HINT: remove default --show-completion and --add-completion options
     help="Face detection and redaction tool")
 
+
 @app.command()
 def redact_faces(
     input_file: Annotated[str, typer.Argument()],
@@ -78,6 +79,59 @@ def redact_faces(
                 face_redaction_method=face_redaction_method)  
   
     console.print(f"Redacting faces Done!")
+
+
+@app.command()
+def redact_faces_stream(
+    output_file: Annotated[Optional[str], typer.Argument()] = None,
+    face_detection_model: Optional[FaceDetectionModel] = typer.Option(
+        FaceDetectionModel.default,
+        "--face-detection-model", "-fd",
+        help = "Face detection model"
+    ),
+    face_redaction_method: Optional[FaceRedactionStrategy] = typer.Option(
+        FaceRedactionStrategy.blur,
+        "--face-redaction-method", "-fr",
+        help = "Face redaction method"
+    ),
+    show_preview: Optional[bool] = typer.Option(
+        True,
+        "--show-preview", "-v",
+        help = "Show video previewś"
+    ),
+):
+    """
+    Redact faces in the camera captured video
+    """
+    editor = MediaFileEditor()
+    output_folder = pathlib.Path(output_file).parent
+    if not output_folder.exists():
+        typer.secho(
+            f"Output file folder '{output_folder}' not found. ",
+            fg = typer.colors.RED,
+        )
+        raise typer.Exit(1)
+    if not (
+        editor.is_valid_video(output_file) ):        
+        typer.secho(
+            f"File '{output_file}' is not valid or supported video file. Check file formats supported using 'info' command",
+            fg = typer.colors.RED,
+        )
+        raise typer.Exit(1)
+    console = Console()
+    print(f"Video will be captured and file '{output_file}' will be saved.")
+
+    with console.status(f"[green] processing video conversion. Press Ctrl+C to stop video capture.") as status:
+
+        editor.redact_faces_in_stream(
+            output_file=output_file,
+            detection_model=face_detection_model,
+            face_redaction_method=face_redaction_method,
+            show_video_preview=show_preview,
+        )
+        
+        console.print(f"Video capture and redacting faces Done!")
+        
 
 @app.command()
 def info():

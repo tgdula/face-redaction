@@ -31,7 +31,8 @@ basic information about the tool and supported image and video formats:
 poetry run redact info
 ```
 
-redact faces in a video:
+### redact faces in a video file:
+default face redaction
 ```bash
 poetry run redact redact-faces MY_VIDEO_FILE.mp4
 ```
@@ -40,6 +41,18 @@ redact faces using convolutional neural network model, with solid color replacem
 ```bash
 poetry run redact redact-faces --face-detection-model=cnn --face-redaction-method=solid MY_VIDEO_FILE.mp4
 ```
+
+### redact faces in a captured video stream:
+default face redaction from a captured video stream, save output to `OUTPUT_VIDEO_FILE.mp4`
+```bash
+poetry run redact redact-faces-stream OUTPUT_VIDEO_FILE.mp4
+```
+
+redact faces in captured video stream using convolutional neural network model, with solid color replacement
+```bash
+poetry run redact redact-faces-stream --face-detection-model=cnn --face-redaction-method=solid MY_VIDEO_FILE.mp4
+```
+
 
 ### Face detection options
  - `default` - `face-recognition` `hog` model

@@ -3,11 +3,15 @@ from dataclasses import dataclass
 
 import cv2
 import numpy as np
+import time
 from cv2.typing import MatLike
 
 import face_redaction.detect_face_facerec as frec
 import face_redaction.detect_face_mediapipe as mp
 
+DEFAULT_VIDEO_CODEC: str = 'mp4v' # HINT: it's case-sensitive. also consider e.g. 'xvid' or 'avc1' or 'h264'
+DEFAULT_VIDEO_CAPTURE_SCALE: float = 0.5
+DEFAULT_VIDEO_CAPTURE_FRAME_RATE: int = 10
 
 @dataclass
 class FileInfo:
@@ -31,6 +35,10 @@ class FaceRedactionStrategy(str, Enum):
     solid = "solid"
     def __str__(self):
         return self.name
+    
+
+class MediaProcessingException(Exception):
+    pass
 
 
 class MediaFileEditor:
@@ -92,7 +100,7 @@ class MediaFileEditor:
             output_file:str, 
             detection_model: FaceDetectionModel,
             face_redaction_method: FaceRedactionStrategy,
-            video_codec:str = 'MP4V', #'XVID',
+            video_codec:str = DEFAULT_VIDEO_CODEC,
             frame_rate:float = 30.0,
             ) -> None:
         
@@ -119,9 +127,6 @@ class MediaFileEditor:
             if not ret:
                 break
 
-            #small_frame = cv2.resize(frame, (0, 0), fx=0.9, fy=0.9)
-            #frame = cv2.cvtColor(small_frame, cv2.COLOR_BGR2RGB)
-
             # Find all face locations in the frame
             face_locations = self._find_face_locations(frame, detection_model=detection_model)
 
@@ -138,6 +143,73 @@ class MediaFileEditor:
 
         # Close all OpenCV windows
         cv2.destroyAllWindows()
+
+    
+    def redact_faces_in_stream(
+        self,
+        output_file:str,
+        detection_model: FaceDetectionModel,
+        face_redaction_method: FaceRedactionStrategy,
+        video_codec:str = DEFAULT_VIDEO_CODEC,
+        show_video_preview: bool = True,
+        frame_rate: int = DEFAULT_VIDEO_CAPTURE_FRAME_RATE,
+        scale: float = DEFAULT_VIDEO_CAPTURE_SCALE,
+    ) -> None:
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            raise MediaProcessingException("Could not open video capture")
+
+        original_width, original_height = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH)), int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
+        new_width, new_height = int(original_width * scale), int(original_height * scale)
+
+        # Define the codec and create output writer object
+        fourcc = cv2.VideoWriter_fourcc(*video_codec)
+        out = cv2.VideoWriter(output_file, fourcc, frame_rate, (new_width, new_height))
+
+        time_per_frame = 1 / frame_rate
+        try:
+            while True:
+                start_time = time.time()
+
+                # Capture frame-by-frame
+                ret, frame = cap.read()
+                if not ret:
+                    break
+
+                # Resize the frame
+                small_frame = cv2.resize(frame, (new_width, new_height))
+
+                # HINT: Crutial for video capture: convert the image from BGR color (OpenCV) to RGB color (required by face_recognition)
+                rgb_frame = small_frame[:, :, ::-1]
+                frame = small_frame
+
+                # Find all face locations in the frame
+                face_locations = self._find_face_locations(rgb_frame, detection_model=detection_model)
+
+                if face_locations:
+                    # Redact faces in all locations using the method provided
+                    for top, right, bottom, left in face_locations:
+                        self._redact_face_roi(frame, top, right, bottom, left, face_redaction_method=face_redaction_method)
+
+                if show_video_preview:
+                    cv2.imshow('preview', frame)
+
+                # Write the frame to the output video file
+                out.write(frame)
+
+                # Wait for the appropriate amount of time to match the frame rate
+                elapsed_time = time.time() - start_time 
+                time_to_wait = max(0, time_per_frame - elapsed_time)
+                time.sleep(time_to_wait)
+
+                # Break the loop on 'q' key press
+                if cv2.waitKey(1) & 0xFF == ord('q'):
+                    break
+        finally:
+            # Release the video capture and writer objects
+            cap.release()
+            out.release()
+            cv2.destroyAllWindows()
 
     
     def _find_face_locations(
@@ -159,12 +231,12 @@ class MediaFileEditor:
         else:
             face_locations = frec.find_face_locations(image_or_frame)
 
-
         # Debug output (uncomment if needed)
         # if face_locations:
         #     print(f" *** Face locations: {len(face_locations)}, e.g. {str(face_locations[0])}")
         # else:
         #     print(" *** Face locations NOT FOUND")
+        
         return face_locations
     
 
